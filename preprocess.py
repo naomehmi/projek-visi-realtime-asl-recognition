@@ -1,18 +1,23 @@
-import cv2;
-import os;
-import numpy as np;
+import tensorflow as tf
 
-def load_images(folder, img_size=(64,64)):
-    images, labels = [], []
-    classes = sorted(os.listdir(folder))
-    label_map = { class_name: idx for idx, class_name in enumerate(classes) }
+# Define feature description
+feature_description = {
+    'image/encoded': tf.io.FixedLenFeature([], tf.string),  # Image stored as bytes
+    'image/object/class/label': tf.io.FixedLenFeature([], tf.int64),   # Label stored as int,
+}
 
-    for class_name in classes:
-        class_folder = os.path.join(folder, class_name)
-        for img_name in os.listdir(class_folder):
-            img = cv2.imread(os.path.join(class_folder, img_name), cv2.IMREAD_GRAYSCALE)
-            img = cv2.resize(img, img_size) / 255.0  # Normalize
-            images.append(img)
-            labels.append(label_map[class_name])
+def _parse_function(example_proto):
+    """Parse TFRecord example"""
+    example = tf.io.parse_single_example(example_proto, feature_description)
+    image = tf.io.decode_jpeg(example['image/encoded'], channels=1)
+    image = tf.image.resize(image, (64, 64))
+    image = tf.cast(image, tf.float32) / 255.0  
+    label = tf.cast(example['image/object/class/label'], tf.int32) - 1
+    return image, label
 
-    return np.array(images), np.array(labels), label_map
+def load_tfrecord_dataset(tfrecord_path, batch_size=32):
+    """Load dataset from TFRecord file"""
+    dataset = tf.data.TFRecordDataset(tfrecord_path)
+    dataset = dataset.map(_parse_function)  # Decode each example
+    dataset = dataset.shuffle(1000).batch(batch_size).prefetch(tf.data.experimental.AUTOTUNE)
+    return dataset
