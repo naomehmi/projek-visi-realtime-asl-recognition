@@ -4,7 +4,7 @@ import numpy as np
 import mediapipe as mp
 
 # Load the trained ASL model
-model = tf.keras.models.load_model("models/asl_model_tfrecord.h5")  # Change path if needed
+model = tf.keras.models.load_model("models/asl_model_tfrecord_v4.keras")  # Change path if needed
 
 # Initialize MediaPipe Hands
 mp_hands = mp.solutions.hands
@@ -58,8 +58,7 @@ while cap.isOpened():
                 continue
 
             hand_img = cv2.cvtColor(hand_img, cv2.COLOR_BGR2GRAY)  # Convert to grayscale
-            hand_img = cv2.resize(hand_img, (64, 64))  # Resize to match model input
-            hand_img = hand_img.astype("float32") / 255.0  # Normalize
+            hand_img = cv2.resize(hand_img, (64, 64)) / 255.0  # Resize to match model input, Normalize
             hand_img = np.expand_dims(hand_img, axis=-1)  # Add channel dimension
             hand_img = np.expand_dims(hand_img, axis=0)  # Add batch dimension
 

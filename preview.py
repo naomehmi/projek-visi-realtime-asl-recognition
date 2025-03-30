@@ -6,7 +6,7 @@ tfrecord_path = "dataset/train/Letters.tfrecord"
 
 raw_dataset = tf.data.TFRecordDataset(tfrecord_path)
 
-for raw_record in raw_dataset.take(1):  # Read the first record
+for raw_record in raw_dataset.take(5):  # Read the first five records
     example = tf.train.Example()
     example.ParseFromString(raw_record.numpy())
     print(example)
