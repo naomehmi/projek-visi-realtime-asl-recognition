@@ -25,9 +25,8 @@ def parse_tfrecord(example_proto):
     parsed = tf.io.parse_single_example(example_proto, feature_description)
 
     # Decode image
-    image = tf.image.decode_jpeg(parsed["image/encoded"], channels=3)
+    image = tf.image.decode_jpeg(parsed["image/encoded"], channels=3)  # Force RGB
     image = tf.image.resize(image, [64, 64]) / 255.0  # Normalize
-    image = tf.image.rgb_to_grayscale(image)
 
     label = parsed["image/object/class/label"] - 1
     return image, label
